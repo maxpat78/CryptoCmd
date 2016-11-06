@@ -24,8 +24,11 @@ AE_minizip.c provides 2 high level API to write or read a document in memory, in
 AE_zlib.c provides support to Deflate algorithm via Zlib[7].
 
 AE_openssl.c implements required cryptographic functions on top of OpenSSL/LibreSSL.
+
 AE_botan.c implements required cryptographic functions on top of Botan.
+
 AE_gcrypt.c implements required cryptographic functions on top of GNU libgcrypt.
+
 AE_nss.c implements required cryptographic functions on top of Mozilla NSS3.
 
 
