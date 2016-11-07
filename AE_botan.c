@@ -136,6 +136,8 @@ int AE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int srcl
 	botan_mac_update(mac, src, srclen);
 
 	*hmac = (char*) malloc(20);
+	if (! *hmac)
+		return 2;
 	botan_mac_final(mac, *hmac);
 
 	return 0;

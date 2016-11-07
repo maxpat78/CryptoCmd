@@ -79,18 +79,6 @@ NOTE: AE-1 preserves CRC-32 on uncompressed data, AE-2 sets it to zero.
 #include <mZipAES.h>
 #include <time.h>
 
-/*
-	 Creates a Deflated and AES-256 encrypted ZIP archive in memory from a single
-	 input. The unique archived file name defaults to "data".
-
-	 src		uncompressed data to archive
-	 srcLen		length of src buffer
-	 dst		receives the address of the resulting ZIP archive
-	 dstLen		receives the length of dst buffer
-	 password	password used to encrypt
-
-	 Returns zero for success.
-*/
 int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *dstLen, char* password)
 {
 	char *tmpbuf = NULL;
@@ -117,7 +105,6 @@ int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *
 		return 3;
 
 	// Encrypts with AES-256 always!
-	// Here we generate the AES key, the HMAC key and the 16-bit verification value
 	if (AE_derive_keys(password, salt, 16, &aes_key, &hmac_key, &vv))
 		return 4;
 	
@@ -214,19 +201,6 @@ int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *
 }
 
 
-
-/*
-	 Extracts in memory the single file from a Deflated and AES-256 encrypted ZIP
-	 archive created with MiniZipAE1Write function.
-
-	 src		compatible ZIP archive to extract from
-	 srcLen		length of src buffer
-	 dst		receives the address of the resulting extracted data
-	 dstLen		receives the length of dst buffer
-	 password	password required to decrypt
-
-	 Returns zero for success.
-*/
 
 int MiniZipAE1Read(char* src, unsigned long srcLen, char** dst, unsigned long *dstLen, char* password)
 {

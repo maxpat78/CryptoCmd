@@ -135,6 +135,8 @@ int AE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int srcl
 	gcry_mac_write(mac, src, srclen);
 	
 	*hmac = (char*) malloc(20);
+	if (! *hmac)
+		return 2;
 	gcry_mac_read(mac, *hmac, &olen);
 	
 	gcry_mac_close(mac);

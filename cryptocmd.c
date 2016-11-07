@@ -1,7 +1,5 @@
+#include <mZipAES.h>
 #include <stdio.h>
-
-extern int MiniZipAE1Read(char* src, unsigned long srcLen, char** dst, unsigned long *dstLen, char* password);
-extern int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *dstLen, char* password);
 
 int main(int argc, char** argv)
 {

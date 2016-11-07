@@ -84,6 +84,9 @@ int AE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, char
 	PK11_ExtractKeyValue(sk);
 	pkd = PK11_GetKeyData(sk);
 
+	if (! pkd)
+		return 4;
+
 	memcpy(kdfbuf, pkd->data, 2*keylen+2);
 	*aes_key = kdfbuf;
 	*hmac_key = kdfbuf+keylen;
@@ -135,6 +138,8 @@ int AE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen,
 	sp = PK11_ParamFromIV(CKM_AES_ECB, 0);
 	ctxt = PK11_CreateContextBySymKey(CKM_AES_ECB, CKA_ENCRYPT, sk, sp);
 
+	if (! ctxt)
+		return 1;
 #ifdef BYTE_ORDER_1234
 	memset(ctr_counter_be, 0, 16);
 #else
@@ -206,9 +211,13 @@ int AE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int srcl
 
 	memset(&np, 0, sizeof(np));
 	ctxt = PK11_CreateContextBySymKey(CKM_SHA_1_HMAC, CKA_SIGN, sk, &np);
+	if (! ctxt)
+		return 1;
 	PK11_DigestBegin(ctxt);
 	PK11_DigestOp(ctxt, src, srclen);
 	*hmac = (char*) malloc(20);
+	if (! *hmac)
+		return 2;
 	PK11_DigestFinal(ctxt, *hmac, &olen, 20);
 
 	PK11_DestroyContext(ctxt, 1);

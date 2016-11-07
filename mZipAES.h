@@ -17,6 +17,38 @@
 #define __MZIPAES__
 
 /*
+	 Creates a Deflated and AES-256 encrypted ZIP archive in memory from a single
+	 input. The unique archived file name defaults to "data".
+
+	 src		uncompressed data to archive
+	 srcLen		length of src buffer
+	 dst		receives the address of the resulting ZIP archive
+	 dstLen		receives the length of dst buffer
+	 password	password used to encrypt
+
+	 Returns zero for success.
+*/
+int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *dstLen, char* password);
+
+
+
+/*
+	 Extracts in memory the single file from a Deflated and AES-256 encrypted ZIP
+	 archive created with MiniZipAE1Write function.
+
+	 src		compatible ZIP archive to extract from
+	 srcLen		length of src buffer
+	 dst		receives the address of the resulting extracted data
+	 dstLen		receives the length of dst buffer
+	 password	password required to decrypt
+
+	 Returns zero for success.
+*/
+int MiniZipAE1Read(char* src, unsigned long srcLen, char** dst, unsigned long *dstLen, char* password);
+
+
+
+/*
 	Generates a random salt for the keys derivation function.
 	
 	salt		a pre allocated buffer receiving the salt
