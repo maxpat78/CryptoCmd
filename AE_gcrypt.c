@@ -97,8 +97,12 @@ int AE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen,
 		betole64((unsigned long long*)ctr_counter_le);
 #endif
 		gcry_cipher_encrypt(cipher, ctr_encrypted_counter, 16, ctr_counter_le, 16);
-		*((unsigned long long*) pbuf)++ = *((unsigned long long*) src)++ ^ *((unsigned long long*) p);
-		*((unsigned long long*) pbuf)++ = *((unsigned long long*) src)++ ^ *((unsigned long long*) q);
+		*((unsigned long long*) pbuf) = *((unsigned long long*) src) ^ *((unsigned long long*) p);
+		pbuf+=sizeof(long long);
+		src+=sizeof(long long);
+		*((unsigned long long*) pbuf) = *((unsigned long long*) src) ^ *((unsigned long long*) q);
+		pbuf+=sizeof(long long);
+		src+=sizeof(long long);
 	}
 
 	if ((i = srclen%16)) {
