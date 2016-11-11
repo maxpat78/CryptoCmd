@@ -18,7 +18,7 @@ void betole64(unsigned long long *x) {
 
 
 
-int AE_gen_salt(char* salt, int saltlen)
+int MZAE_gen_salt(char* salt, int saltlen)
 {
 	if (saltlen != 8 && saltlen != 12 && saltlen != 16)
 		return 1;
@@ -36,7 +36,7 @@ int AE_gen_salt(char* salt, int saltlen)
 
 
 
-int AE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, char** hmac_key, char** vv)
+int MZAE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, char** hmac_key, char** vv)
 {
 	int keylen = 0;
 	char *kdfbuf;
@@ -100,7 +100,7 @@ int AE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, char
 
 
 
-int AE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen, char** dst)
+int MZAE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen, char** dst)
 {
 	SECItem ki;
 	PK11SlotInfo* slot;
@@ -189,7 +189,7 @@ int AE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen,
 
 
 
-int AE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int srclen, char** hmac)
+int MZAE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int srclen, char** hmac)
 {
 	SECItem ki, np;
 	PK11SlotInfo* slot;

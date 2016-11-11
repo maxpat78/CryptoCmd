@@ -1,6 +1,6 @@
-gcc -DMAIN -I. AE_minizip.c AE_zlib.c AE_openssl.c -lz -llibcrypto -otest1.exe
-gcc -DMAIN -I. AE_minizip.c AE_zlib.c AE_botan.c -lz -lbotan -otest2.exe
-gcc -DMAIN -I. -I /usr/include AE_minizip.c AE_zlib.c AE_gcrypt.c -L /usr/lib -lz -llibgcrypt -otest3.exe
-gcc -DMAIN -I. AE_minizip.c AE_zlib.c AE_nss.c -lz -lnss3 -otest4.exe
+gcc -DMAIN -I. MZAE_minizip.c MZAE_err.c MZAE_zlib.c MZAE_openssl.c -lz -lcrypto -otest1.exe
+gcc -DMAIN -I. MZAE_minizip.c MZAE_err.c MZAE_zlib.c MZAE_botan.c -lz -lbotan -otest2.exe
+gcc -DMAIN -I. -I /usr/include MZAE_minizip.c MZAE_err.c MZAE_zlib.c MZAE_gcrypt.c -L /usr/lib -lz -lgcrypt -otest3.exe
+gcc -DMAIN -I. MZAE_minizip.c MZAE_err.c MZAE_zlib.c MZAE_nss.c -lz -lnss3 -otest4.exe
 
-gcc -I. -I /usr/include cryptocmd.c AE_minizip.c AE_zlib.c AE_gcrypt.c -L /usr/lib -lz -llibgcrypt -o cryptocmd.exe
+gcc -I. -I /usr/include cryptocmd.c MZAE_minizip.c MZAE_zlib.c MZAE_gcrypt.c -L /usr/lib -lz -lgcrypt -o cryptocmd.exe

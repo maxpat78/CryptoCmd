@@ -9,14 +9,14 @@ Requires Zlib.
 
 
 
-unsigned long AE_crc(unsigned long crc, char* src, unsigned int srclen)
+unsigned long MZAE_crc(unsigned long crc, char* src, unsigned int srclen)
 {
 	return crc32(crc, src, srclen);
 }
 
 
 
-int AE_deflate(char* src, unsigned int srclen, char** dst, unsigned int* dstlen)
+int MZAE_deflate(char* src, unsigned int srclen, char** dst, unsigned int* dstlen)
 {
 	z_stream zstream;
 	*dst = (char*) malloc(srclen+64);
@@ -49,7 +49,7 @@ int AE_deflate(char* src, unsigned int srclen, char** dst, unsigned int* dstlen)
 
 
 
-int AE_inflate(char* src, unsigned int srclen, char* dst, unsigned int dstlen)
+int MZAE_inflate(char* src, unsigned int srclen, char* dst, unsigned int dstlen)
 {
 	z_stream zstream;
 

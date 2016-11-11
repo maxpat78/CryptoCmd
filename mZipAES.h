@@ -16,6 +16,32 @@
 #if !defined(__MZIPAES__)
 #define __MZIPAES__
 
+# ifdef  __cplusplus
+extern "C" {
+# endif
+
+#define MZAE_ERR_SUCCESS			0
+#define MZAE_ERR_PARAMS				-1
+#define MZAE_ERR_CODEC				2
+#define MZAE_ERR_SALT				3
+#define MZAE_ERR_KDF				4
+#define MZAE_ERR_AES				5
+#define MZAE_ERR_HMAC				6
+#define MZAE_ERR_NOMEM				-2
+#define MZAE_ERR_BADZIP				-10
+#define MZAE_ERR_BADVV				-11
+#define MZAE_ERR_BADHMAC			-12
+#define MZAE_ERR_BADCRC				-13
+
+
+
+/*
+	Translates one of the error codes above into a textual message.
+*/
+char* MZAE_errmsg(int code);
+
+
+
 /*
 	 Creates a Deflated and AES-256 encrypted ZIP archive in memory from a single
 	 input. The unique archived file name defaults to "data".
@@ -54,7 +80,7 @@ int MiniZipAE1Read(char* src, unsigned long srcLen, char** dst, unsigned long *d
 	salt		a pre allocated buffer receiving the salt
 	saltlen		length of the required salt (must be 8, 12 or 16)
 */
-int AE_gen_salt(char* salt, int saltlen);
+int MZAE_gen_salt(char* salt, int saltlen);
 
 
 /*
@@ -68,7 +94,7 @@ int AE_gen_salt(char* salt, int saltlen);
 	hmac_key	pointer receiving the address of the generated HMAC key
 	vv			pointer receiving the address of the verification value
 */
-int AE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, char** hmac_key, char** vv);
+int MZAE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, char** hmac_key, char** vv);
 
 
 /*
@@ -81,7 +107,7 @@ int AE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, char
 	srclen		length of the data to encrypt
 	dst			pointer receiving the address of the encrypted data buffer
 */
-int AE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen, char** dst);
+int MZAE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen, char** dst);
 
 
 /*
@@ -93,7 +119,7 @@ int AE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen,
 	srclen		length of such data
 	dst			pointer receiving the address of the HMAC string
 */
-int AE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int srclen, char** hmac);
+int MZAE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int srclen, char** hmac);
 
 
 /*
@@ -103,7 +129,7 @@ int AE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int srcl
 	src			source buffer
 	srclen		its length
 */
-unsigned long AE_crc(unsigned long crc, char* src, unsigned int srclen);
+unsigned long MZAE_crc(unsigned long crc, char* src, unsigned int srclen);
 
 
 /*
@@ -116,7 +142,7 @@ unsigned long AE_crc(unsigned long crc, char* src, unsigned int srclen);
 
 	Returns zero in case of success.
 */
-int AE_deflate(char* src, unsigned int srclen, char** dst, unsigned int* dstlen);
+int MZAE_deflate(char* src, unsigned int srclen, char** dst, unsigned int* dstlen);
 
 
 /*
@@ -129,5 +155,10 @@ int AE_deflate(char* src, unsigned int srclen, char** dst, unsigned int* dstlen)
 
 	Returns zero in case of success.
 */
-int AE_inflate(char* src, unsigned int srclen, char* dst, unsigned int dstlen);
+int MZAE_inflate(char* src, unsigned int srclen, char* dst, unsigned int dstlen);
+
+# ifdef  __cplusplus
+}
+# endif
+
 #endif // __MZIPAES__

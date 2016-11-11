@@ -1,10 +1,11 @@
 /*
-	Cryptographic functions built on top of GNU libgcrypt.
+	Cryptographic functions built on top of OpenSSL/LibreSSL
 */
 
 #include <mZipAES.h>
-
-#include <gcrypt.h>
+#include <string.h>
+#include <openssl/aes.h>
+#include <openssl/hmac.h>
 
 
 #ifdef BYTE_ORDER_1234
@@ -17,19 +18,23 @@ void betole64(unsigned long long *x) {
 
 
 
-int AE_gen_salt(char* salt, int saltlen)
+int MZAE_gen_salt(char* salt, int saltlen)
 {
+	RAND_poll();
+	RAND_screen();
+
 	if (saltlen != 8 && saltlen != 12 && saltlen != 16)
 		return 1;
 	
-	memcpy(salt, gcry_random_bytes(saltlen, 1), saltlen);
-
+	if (!RAND_bytes(salt, saltlen) || !RAND_pseudo_bytes(salt, saltlen))
+		return 2;
+	
 	return 0;
 }
 
 
 
-int AE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, char** hmac_key, char** vv)
+int MZAE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, char** hmac_key, char** vv)
 {
 	int keylen = 0;
 	char *kdfbuf;
@@ -47,7 +52,7 @@ int AE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, char
 	if (! kdfbuf)
 		return 2;
 	
-	if (gcry_kdf_derive(password, strlen(password), GCRY_KDF_PBKDF2, GCRY_MD_SHA1, salt, saltlen, 1000, 2*keylen+2, kdfbuf))
+	if (!PKCS5_PBKDF2_HMAC_SHA1(password, strlen(password), salt, saltlen, 1000, 2*keylen+2, kdfbuf))
 		return 3;
 	
 	*aes_key = kdfbuf;
@@ -59,9 +64,9 @@ int AE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, char
 
 
 
-int AE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen, char** dst)
+int MZAE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen, char** dst)
 {
-	gcry_cipher_hd_t cipher;
+	AES_KEY aes_key;
 	char ctr_counter_le[16];
 	char ctr_encrypted_counter[16];
 #ifdef BYTE_ORDER_1234
@@ -70,12 +75,12 @@ int AE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen,
 	const char* p = ctr_encrypted_counter;
 	const char* q = p+8;
 	char *pbuf;
-	unsigned int i, ilen, olen;
+	unsigned int i;
 
 	if (!keylen || !srclen)
 		return -1;
 
-	if (gcry_cipher_open(&cipher, GCRY_CIPHER_AES256, 1, 0) || gcry_cipher_setkey(cipher, key, keylen))
+	if (AES_set_encrypt_key(key, keylen*8, &aes_key))
 		return 1;
 
 #ifdef BYTE_ORDER_1234
@@ -96,7 +101,7 @@ int AE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen,
 		*((unsigned long long*) ctr_counter_le) = *((unsigned long long*) ctr_counter_be);
 		betole64((unsigned long long*)ctr_counter_le);
 #endif
-		gcry_cipher_encrypt(cipher, ctr_encrypted_counter, 16, ctr_counter_le, 16);
+		AES_ecb_encrypt(ctr_counter_le, ctr_encrypted_counter, &aes_key, 1);
 		*((unsigned long long*) pbuf) = *((unsigned long long*) src) ^ *((unsigned long long*) p);
 		pbuf+=sizeof(long long);
 		src+=sizeof(long long);
@@ -113,37 +118,22 @@ int AE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen,
 		*((unsigned long long*) ctr_counter_le) = *((unsigned long long*) ctr_counter_be);
 		betole64((unsigned long long*)ctr_counter_le);
 #endif
-		gcry_cipher_encrypt(cipher, ctr_encrypted_counter, 16, ctr_counter_le, 16);
+		AES_ecb_encrypt(ctr_counter_le, ctr_encrypted_counter, &aes_key, 1);
 		while (i--)
 			*pbuf++ = *src++ ^ *p++;
 	}
-
-	gcry_cipher_close(cipher);
 
 	return 0;
 }
 
 
 
-int AE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int srclen, char** hmac)
+int MZAE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int srclen, char** hmac)
 {
-	gcry_mac_hd_t mac;
-	int olen;
-
 	if (!keylen || !srclen)
 		return -1;
 
-	if (gcry_mac_open(&mac, GCRY_MAC_HMAC_SHA1, 0, 0) || gcry_mac_setkey(mac, key, keylen))
-		return 1;
-	
-	gcry_mac_write(mac, src, srclen);
-	
-	*hmac = (char*) malloc(20);
-	if (! *hmac)
-		return 2;
-	gcry_mac_read(mac, *hmac, &olen);
-	
-	gcry_mac_close(mac);
+	*hmac = HMAC(EVP_sha1(), key, keylen, src, srclen, 0, 0);
 
 	return 0;
 }

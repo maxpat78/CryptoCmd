@@ -94,31 +94,31 @@ int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *
 	struct tm *ptm;
 
 	if (!srcLen || !password)
-		return 1;
+		return MZAE_ERR_PARAMS;
 
-	crc = AE_crc(0, src, srcLen);
+	crc = MZAE_crc(0, src, srcLen);
 
-	if (AE_deflate(src, srcLen, &tmpbuf, &buflen))
-		return 2;
+	if (MZAE_deflate(src, srcLen, &tmpbuf, &buflen))
+		return MZAE_ERR_CODEC;
 
-	if (AE_gen_salt(salt, 16))
-		return 3;
+	if (MZAE_gen_salt(salt, 16))
+		return MZAE_ERR_SALT;
 
 	// Encrypts with AES-256 always!
-	if (AE_derive_keys(password, salt, 16, &aes_key, &hmac_key, &vv))
-		return 4;
+	if (MZAE_derive_keys(password, salt, 16, &aes_key, &hmac_key, &vv))
+		return MZAE_ERR_KDF;
 	
-	if (AE_ctr_crypt(aes_key, 32, tmpbuf, buflen, &ppbuf))
-		return 5;
+	if (MZAE_ctr_crypt(aes_key, 32, tmpbuf, buflen, &ppbuf))
+		return MZAE_ERR_AES;
 
-	if (AE_hmac_sha1_80(hmac_key, 32, ppbuf, buflen, &digest))
-		return 6;
+	if (MZAE_hmac_sha1_80(hmac_key, 32, ppbuf, buflen, &digest))
+		return MZAE_ERR_HMAC;
 	
 	tmpbuf = (char*) realloc(tmpbuf, buflen+4096);
 	p = tmpbuf;
 
 	if (!p)
-		return 7;
+		return MZAE_ERR_NOMEM;
 
 #define PDW(a, b) *((int*)(p+a)) = b
 #define PW(a, b) *((short*)(p+a)) = b
@@ -197,7 +197,7 @@ int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *
 
 	free(ppbuf);
 	
-	return 0;
+	return MZAE_ERR_SUCCESS;
 }
 
 
@@ -213,7 +213,7 @@ int MiniZipAE1Read(char* src, unsigned long srcLen, char** dst, unsigned long *d
 	char *digest, *pbuf;
 
 	if (!srcLen || !password)
-		return 1;
+		return MZAE_ERR_PARAMS;
 
 #define GDW(a) *((unsigned int*)(src+a))
 #define GW(a) *((unsigned short*)(src+a))
@@ -221,45 +221,48 @@ int MiniZipAE1Read(char* src, unsigned long srcLen, char** dst, unsigned long *d
 	// Some sanity checks to ensure it is a compatible ZIP
 	if (GDW(0) != 0x04034B50 || GW(8) != 99 ||
 		GW(28) != 11 || GW(34) != 0x9901 || GW(38) != 1 || GW(40) != 0x4541 || *((char*)(src + 42)) != 3)
-		return 2;
+		return MZAE_ERR_BADZIP;
 	
 	salt = src + 45;
 
 	// Here we regenerate the AES key, the HMAC key and the 16-bit verification value
-	if (AE_derive_keys(password, salt, 16, &aes_key, &hmac_key, &vv))
-		return 3;
+	if (MZAE_derive_keys(password, salt, 16, &aes_key, &hmac_key, &vv))
+		return MZAE_ERR_KDF;
 	
 	// Compares the 16-bit verification values
 	if (GW(61) != *((unsigned short*)vv))
-		return 4;
+		return MZAE_ERR_BADVV;
 
 	// Compares the HMACs
-	if (AE_hmac_sha1_80(hmac_key, 32, src+63, GDW(18)-28, &digest))
-		return 5;
+	if (MZAE_hmac_sha1_80(hmac_key, 32, src+63, GDW(18)-28, &digest))
+		return MZAE_ERR_HMAC;
 	if (memcmp(digest, src+63+GDW(18)-28, 10))
-		return 6;
+		return MZAE_ERR_BADHMAC;
 
 	// Decrypts into a temporary buffer
-	if (AE_ctr_crypt(aes_key, 32, src+63, GDW(18)-28, &pbuf))
-		return 7;
+	if (MZAE_ctr_crypt(aes_key, 32, src+63, GDW(18)-28, &pbuf))
+		return MZAE_ERR_AES;
 
 	tmpbuf = (char*) malloc(GDW(22));
 
-	if (AE_inflate(pbuf, GDW(18)-28, tmpbuf, GDW(22)))
-		return 8;
+	if (!tmpbuf)
+		return MZAE_ERR_NOMEM;
+
+	if (MZAE_inflate(pbuf, GDW(18)-28, tmpbuf, GDW(22)))
+		return MZAE_ERR_CODEC;
 	
-	crc = AE_crc(0, tmpbuf, GDW(22));
+	crc = MZAE_crc(0, tmpbuf, GDW(22));
 
 	// Compares the CRCs on uncompressed data
 	if (crc != GDW(14))
-		return 9;
+		return MZAE_ERR_BADCRC;
 
 	*dst = tmpbuf;
 	*dstLen = GDW(22);
 
 	free(pbuf);
 
-	return 0;
+	return MZAE_ERR_SUCCESS;
 }
 
 
@@ -272,9 +275,9 @@ void main()
 	int outLen, r;
 	//~ FILE *f = fopen("a.zip", "wb");
 	r = MiniZipAE1Write(s, strlen(s), &out, &outLen, "kazookazaa");
-	printf("MiniZipAE1Write returned %d\n", r);
+	printf("MiniZipAE1Write returned error code %d: %s\n", r, MZAE_errmsg(r));
 	r = MiniZipAE1Read(out, outLen, &out, &outLen, "kazookazaa");
-	printf("MiniZipAE1Read returned %d\n", r);
+	printf("MiniZipAE1Write returned error code %d: %s\n", r, MZAE_errmsg(r));
 	if (outLen != strlen(s) || memcmp(s, out, outLen) != 0)
 		puts("SELF TEST FAILED!");
 	else
