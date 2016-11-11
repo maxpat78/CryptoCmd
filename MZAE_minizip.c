@@ -120,8 +120,15 @@ int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *
 	if (!p)
 		return MZAE_ERR_NOMEM;
 
-#define PDW(a, b) *((int*)(p+a)) = b
-#define PW(a, b) *((short*)(p+a)) = b
+#ifdef BYTE_ORDER_1234
+	#define bsw16(x) (*x = ((unsigned short)*x >> 8) | ((unsigned short)*x << 8))
+	#define bsw32(x) (*x = ((unsigned char*)x)[3] | (((unsigned char*)x)[2]<<8) | (((unsigned char*)x)[1]<<16) | (((unsigned char*)x)[0]<<24))
+	#define PDW(a, b) *((int*)(p+a)) = b; bsw32((int*)(p+a))
+	#define PW(a, b) *((short*)(p+a)) = b; bsw16((short*)(p+a))
+#else
+	#define PDW(a, b) *((int*)(p+a)) = b
+	#define PW(a, b) *((short*)(p+a)) = b
+#endif
 
 	// Builds the ZIP Local File Header
 	PDW(0, 0x04034B50);
