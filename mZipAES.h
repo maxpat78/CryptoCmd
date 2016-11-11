@@ -37,6 +37,8 @@ extern "C" {
 
 /*
 	Translates one of the error codes above into a textual message.
+	
+	Returns a pointer to the error message.
 */
 char* MZAE_errmsg(int code);
 
@@ -79,6 +81,8 @@ int MiniZipAE1Read(char* src, unsigned long srcLen, char** dst, unsigned long *d
 	
 	salt		a pre allocated buffer receiving the salt
 	saltlen		length of the required salt (must be 8, 12 or 16)
+
+	 Returns zero for success.
 */
 int MZAE_gen_salt(char* salt, int saltlen);
 
@@ -93,6 +97,8 @@ int MZAE_gen_salt(char* salt, int saltlen);
 	aes_key		pointer receiving the address of the generated AES key
 	hmac_key	pointer receiving the address of the generated HMAC key
 	vv			pointer receiving the address of the verification value
+
+	 Returns zero for success.
 */
 int MZAE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, char** hmac_key, char** vv);
 
@@ -106,6 +112,8 @@ int MZAE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, ch
 	src			points to the data to encrypt
 	srclen		length of the data to encrypt
 	dst			pointer receiving the address of the encrypted data buffer
+
+	 Returns zero for success.
 */
 int MZAE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen, char** dst);
 
@@ -118,6 +126,8 @@ int MZAE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srcle
 	src			points to the data to calculate the HMAC for
 	srclen		length of such data
 	dst			pointer receiving the address of the HMAC string
+
+	 Returns zero for success.
 */
 int MZAE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int srclen, char** hmac);
 
@@ -128,6 +138,8 @@ int MZAE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int sr
 	crc			initial crc value to update
 	src			source buffer
 	srclen		its length
+
+	 Returns the computated CRC.
 */
 unsigned long MZAE_crc(unsigned long crc, char* src, unsigned int srclen);
 
@@ -140,7 +152,8 @@ unsigned long MZAE_crc(unsigned long crc, char* src, unsigned int srclen);
 	dst			pointer receiving the address of the compressed data
 	dstlen		pointer receiving the length of the compressed data
 
-	Returns zero in case of success.
+
+	 Returns zero for success.
 */
 int MZAE_deflate(char* src, unsigned int srclen, char** dst, unsigned int* dstlen);
 
@@ -153,7 +166,8 @@ int MZAE_deflate(char* src, unsigned int srclen, char** dst, unsigned int* dstle
 	dst			pre-allocated buffer receiving the uncompressed data
 	dstlen		its length
 
-	Returns zero in case of success.
+
+	 Returns zero for success.
 */
 int MZAE_inflate(char* src, unsigned int srclen, char* dst, unsigned int dstlen);
 

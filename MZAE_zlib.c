@@ -5,6 +5,7 @@ in a single pass.
 Requires Zlib.
 */
 #include <mZipAES.h>
+#include <stdlib.h>
 #include <zlib.h>
 
 

@@ -77,6 +77,8 @@ NOTE: AE-1 preserves CRC-32 on uncompressed data, AE-2 sets it to zero.
     zipfile comment (variable size)
 */
 #include <mZipAES.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *dstLen, char* password)
