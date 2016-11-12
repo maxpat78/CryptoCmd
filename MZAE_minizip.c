@@ -116,7 +116,7 @@ int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *
 	if (MZAE_hmac_sha1_80(hmac_key, 32, ppbuf, buflen, &digest))
 		return MZAE_ERR_HMAC;
 	
-	tmpbuf = (char*) realloc(tmpbuf, buflen+4096);
+	tmpbuf = (char*) realloc(tmpbuf, buflen+156); //73+61+22
 	p = tmpbuf;
 
 	if (!p)
