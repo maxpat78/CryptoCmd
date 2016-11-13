@@ -14,7 +14,7 @@ char* MZAE_errmsg(int code)
 	if (code == MZAE_ERR_CODEC)
 		return "Error while (de)compressing data";
 	if (code == MZAE_ERR_SALT)
-		return "Can't generate random salt";
+		return "Can't generate a random salt";
 	if (code == MZAE_ERR_KDF)
 		return "Problem while generating the AES and HMAC keys";
 	if (code == MZAE_ERR_AES)
@@ -24,11 +24,11 @@ char* MZAE_errmsg(int code)
 	if (code == MZAE_ERR_NOMEM)
 		return "Can't allocate required memory";
 	if (code == MZAE_ERR_BADZIP)
-		return "Incompatible document format";
+		return "Not a MiniZipAE1 document";
 	if (code == MZAE_ERR_BADHMAC)
-		return "HMACs do not match: corrupted/tampered encrypted data?";
+		return "Bad HMAC on encrypted data";
 	if (code == MZAE_ERR_BADCRC)
-		return "CRCs on uncompressed data do not match";
+		return "Bad CRC on uncompressed data";
 	if (code == MZAE_ERR_BADVV)
 		return "Wrong password";
 	return "Unknown error";

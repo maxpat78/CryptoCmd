@@ -81,6 +81,14 @@ NOTE: AE-1 preserves CRC-32 on uncompressed data, AE-2 sets it to zero.
 #include <string.h>
 #include <time.h>
 
+#ifdef BYTE_ORDER_1234
+	// In the ZIP format numbers are Little Endian
+	#define BS16(x) (x & 0xFF00) >> 8 | (x & 0xFF) << 8
+	#define BS32(x) (x & 0xFF000000) >> 24 | ((x & 0xFF0000) >> 16) << 8 | ((x & 0xFF00) >> 8) << 16 | (x & 0xFF) << 24 
+#endif
+
+
+
 int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *dstLen, char* password)
 {
 	char *tmpbuf = NULL;
@@ -123,9 +131,6 @@ int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *
 		return MZAE_ERR_NOMEM;
 
 #ifdef BYTE_ORDER_1234
-	// In the ZIP format numbers are Little Endian
-	#define BS16(x) (x & 0xFF00) >> 8 | (x & 0xFF) << 8
-	#define BS32(x) (x & 0xFF000000) >> 24 | ((x & 0xFF0000) >> 16) << 8 | ((x & 0xFF00) >> 8) << 16 | (x & 0xFF) << 24 
 	#define PDW(a, b) *((int*)(p+a)) = BS32(b)
 	#define PW(a, b) *((short*)(p+a)) = BS16(b)
 #else
@@ -234,6 +239,9 @@ int MiniZipAE1Read(char* src, unsigned long srcLen, char** dst, unsigned long *d
 	#define GW(a) *((unsigned short*)(src+a))
 #endif
 
+	if (srcLen < 159)
+		return MZAE_ERR_BADZIP;
+
 	// Some sanity checks to ensure it is a compatible ZIP
 	if (GDW(0) != 0x04034B50 || GW(8) != 99 ||
 		GW(28) != 11 || GW(34) != 0x9901 || GW(38) != 1 || GW(40) != 0x4541 || *((char*)(src + 42)) != 3)
@@ -283,6 +291,7 @@ int MiniZipAE1Read(char* src, unsigned long srcLen, char** dst, unsigned long *d
 
 	return MZAE_ERR_SUCCESS;
 }
+
 
 
 #ifdef MAIN
