@@ -61,8 +61,8 @@ int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *
 
 
 /*
-	 Extracts in memory the single file from a Deflated and AES-256 encrypted ZIP
-	 archive created with MiniZipAE1Write function.
+	 Extracts in memory the single file from a Deflated and AES encrypted ZIP
+	 archive created with MiniZipAE1Write function (accepts any key strength).
 
 	 src		compatible ZIP archive to extract from
 	 srcLen		length of src buffer
