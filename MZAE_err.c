@@ -24,7 +24,7 @@ char* MZAE_errmsg(int code)
 	if (code == MZAE_ERR_NOMEM)
 		return "Can't allocate required memory";
 	if (code == MZAE_ERR_BADZIP)
-		return "Not a MiniZipAE1 document";
+		return "Bad document format";
 	if (code == MZAE_ERR_BADHMAC)
 		return "Bad HMAC on encrypted data";
 	if (code == MZAE_ERR_BADCRC)

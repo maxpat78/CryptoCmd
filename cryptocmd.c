@@ -5,7 +5,7 @@
 int main(int argc, char** argv)
 {
     char opt = 0, *buf=0, *dst;
-    int pm, found=1;
+    int pm, found=1, err;
     long size;
     FILE *fi, *fo;
 
@@ -68,14 +68,14 @@ int main(int argc, char** argv)
     
     fclose(fi);
 
-    if (opt == 'E' && MiniZipAE1Write(buf, size, &dst, &size, argv[0])) {
-        puts("Error while generating the encrypted file!");
+    if (opt == 'E' && (err = MiniZipAE1Write(buf, size, &dst, &size, argv[0]))) {
+        printf("Error while generating the encrypted file: %s", MZAE_errmsg(err));
         fclose(fo);
         return 1;
     }
 
-    if (opt == 'D' && MiniZipAE1Read(buf, size, &dst, &size, argv[0])) {
-        puts("Error while decrypting the file!");
+    if (opt == 'D' && (err = MiniZipAE1Read(buf, size, &dst, &size, argv[0]))) {
+        printf("Error while extracting the encrypted file: %s", MZAE_errmsg(err));
         fclose(fo);
         return 1;
     }
@@ -88,6 +88,6 @@ int main(int argc, char** argv)
 
     fclose(fo);
 
-    puts("Done!");
+    printf("Done, %d bytes written.", size);
     return 0;
 }

@@ -252,7 +252,7 @@ int MiniZipAE1Read(char* src, unsigned long srcLen, char** dst, unsigned long *d
 #endif
 
 	// Some sanity checks to ensure it is a compatible ZIP
-	if (srcLen < 159)
+	if (srcLen < 151)
 		return MZAE_ERR_BADZIP;
 
 	keyLen = *((char*)(src + 42));
