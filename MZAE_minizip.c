@@ -112,7 +112,7 @@ int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *
 	struct tm *ptm;
 #endif
 
-	if (!srcLen || !password || !password[0])
+	if (!srcLen)
 		return MZAE_ERR_PARAMS;
 
 	if (MZAE_deflate(src, srcLen, &tmpbuf, &buflen))
@@ -123,6 +123,9 @@ int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *
 		*dstLen = buflen + 156; //73+61+22
 		return MZAE_ERR_SUCCESS;
 	}
+
+	if (!password || !password[0])
+		return MZAE_ERR_PARAMS;
 
 	if (! *dst || *dstLen < (buflen + 156))
 		return MZAE_ERR_BUFFER;
@@ -248,7 +251,7 @@ int MiniZipAE1Read(char* src, unsigned long srcLen, char** dst, unsigned long *d
 	char* vv;
 	char *digest, *pbuf;
 
-	if (!srcLen || !password || !password[0])
+	if (!srcLen)
 		return MZAE_ERR_PARAMS;
 
 #ifdef BYTE_ORDER_1234
@@ -284,6 +287,9 @@ int MiniZipAE1Read(char* src, unsigned long srcLen, char** dst, unsigned long *d
 
 	if (! *dst || *dstLen < uncompSize)
 		return MZAE_ERR_BUFFER;
+
+	if (!password || !password[0])
+		return MZAE_ERR_PARAMS;
 
 	salt = src + 45;
 
