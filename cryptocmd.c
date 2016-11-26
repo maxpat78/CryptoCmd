@@ -6,7 +6,7 @@ int main(int argc, char** argv)
 {
     char opt = 0, *buf=0, *dst;
     int pm, found=1, err;
-    long size;
+    long size, reqsize;
     FILE *fi, *fo;
 
     for (pm=1; pm < argc; pm++)
@@ -14,7 +14,7 @@ int main(int argc, char** argv)
         if (argv[pm][0] != '/') continue;
 
         if (argv[pm][1] == '?') {
-            printf( "Encrypts or decrypts a text file.\n\n" \
+            printf( "Decrypts or encrypts a text file into a compatible ZIP archive.\n\n" \
             "CRYPTOCMD /D | /E password infile outfile\n\n" \
             "  /D         decrypts\n" \
             "  /E         encrypts\n" );
@@ -68,19 +68,43 @@ int main(int argc, char** argv)
     
     fclose(fi);
 
-    if (opt == 'E' && (err = MiniZipAE1Write(buf, size, &dst, &size, argv[0]))) {
-        printf("Error while generating the encrypted file: %s", MZAE_errmsg(err));
-        fclose(fo);
-        return 1;
+    if (opt == 'E') {
+        reqsize = 0;
+        err = MiniZipAE1Write(buf, size, &dst, &reqsize, argv[0]);
+        if (err != MZAE_ERR_SUCCESS) {
+            printf("Error while computating the buffer size: %s", MZAE_errmsg(err));
+            fclose(fo);
+            return 1;
+        }
+        dst = (char*) malloc(reqsize);
+        err = MiniZipAE1Write(buf, size, &dst, &reqsize, argv[0]);
+        if (err != MZAE_ERR_SUCCESS) {
+            printf("Error while generating the encrypted file: %s", MZAE_errmsg(err));
+            fclose(fo);
+            return 1;
+        }
+        printf("Encrypting... ");
     }
 
-    if (opt == 'D' && (err = MiniZipAE1Read(buf, size, &dst, &size, argv[0]))) {
-        printf("Error while extracting the encrypted file: %s", MZAE_errmsg(err));
-        fclose(fo);
-        return 1;
+    if (opt == 'D') {
+        reqsize = 0;
+        err = MiniZipAE1Read(buf, size, &dst, &reqsize, argv[0]);
+        if (err != MZAE_ERR_SUCCESS) {
+            printf("Error while computating the buffer size: %s", MZAE_errmsg(err));
+            fclose(fo);
+            return 1;
+        }
+        dst = (char*) malloc(reqsize);
+        err = MiniZipAE1Read(buf, size, &dst, &reqsize, argv[0]);
+        if (err != MZAE_ERR_SUCCESS) {
+            printf("Error while extracting the encrypted file: %s", MZAE_errmsg(err));
+            fclose(fo);
+            return 1;
+        }
+        printf("Decrypting... ");
     }
 
-    if (fwrite(dst, 1, size, fo) != size) {
+    if (fwrite(dst, 1, reqsize, fo) != reqsize) {
         puts("Error while writing to the output file!");
         fclose(fo);
         return 1;
@@ -88,6 +112,6 @@ int main(int argc, char** argv)
 
     fclose(fo);
 
-    printf("Done, %d bytes written.", size);
+    printf("done, %d bytes written.", reqsize);
     return 0;
 }

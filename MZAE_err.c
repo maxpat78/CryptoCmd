@@ -23,6 +23,8 @@ char* MZAE_errmsg(int code)
 		return "Can't computate the HMAC";
 	if (code == MZAE_ERR_NOMEM)
 		return "Can't allocate required memory";
+	if (code == MZAE_ERR_BUFFER)
+		return "Insufficient buffer size";
 	if (code == MZAE_ERR_BADZIP)
 		return "Bad document format";
 	if (code == MZAE_ERR_BADHMAC)

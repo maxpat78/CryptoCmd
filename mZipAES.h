@@ -1,5 +1,5 @@
 /*
-   mZipAES
+   mZipAES.h
 
    A micro reader & writer for AES encrypted ZIP archives.
 
@@ -21,17 +21,18 @@ extern "C" {
 # endif
 
 #define MZAE_ERR_SUCCESS			0
-#define MZAE_ERR_PARAMS				-1
+#define MZAE_ERR_PARAMS				1
 #define MZAE_ERR_CODEC				2
 #define MZAE_ERR_SALT				3
 #define MZAE_ERR_KDF				4
 #define MZAE_ERR_AES				5
 #define MZAE_ERR_HMAC				6
-#define MZAE_ERR_NOMEM				-2
-#define MZAE_ERR_BADZIP				-10
-#define MZAE_ERR_BADVV				-11
-#define MZAE_ERR_BADHMAC			-12
-#define MZAE_ERR_BADCRC				-13
+#define MZAE_ERR_NOMEM				7
+#define MZAE_ERR_BUFFER				8
+#define MZAE_ERR_BADZIP				9
+#define MZAE_ERR_BADVV				10
+#define MZAE_ERR_BADHMAC			11
+#define MZAE_ERR_BADCRC				12
 
 
 
@@ -45,32 +46,34 @@ char* MZAE_errmsg(int code);
 
 
 /*
-	 Creates a Deflated and AES-256 encrypted ZIP archive in memory from a single
-	 input. The unique archived file name defaults to "data".
+	Creates a Deflated and AES-256 encrypted ZIP archive in memory from a single
+	input. The unique archived file name defaults to "data".
 
-	 src		uncompressed data to archive
-	 srcLen		length of src buffer
-	 dst		receives the address of the resulting ZIP archive
-	 dstLen		receives the length of dst buffer
-	 password	password used to encrypt
+	src		uncompressed data to archive
+	srcLen		length of src buffer
+	dst		pre allocated buffer receiving the resulting ZIP archive
+	dstLen		length of dst buffer
+	password	ASCII password used to encrypt
 
-	 Returns zero for success.
+	Returns zero for success.
+	If called with dstLen set to zero, fills it with the required number of bytes.
 */
 int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *dstLen, char* password);
 
 
 
 /*
-	 Extracts in memory the single file from a Deflated and AES encrypted ZIP
-	 archive created with MiniZipAE1Write function (accepts any key strength).
+	Extracts in memory the single file from a Deflated and AES encrypted ZIP
+	archive created with MiniZipAE1Write function (accepts any key strength).
 
-	 src		compatible ZIP archive to extract from
-	 srcLen		length of src buffer
-	 dst		receives the address of the resulting extracted data
-	 dstLen		receives the length of dst buffer
-	 password	password required to decrypt
+	src		compatible ZIP archive to extract from
+	srcLen		length of src buffer
+	dst		pre allocated buffer for the extracted data
+	dstLen		length of dst buffer
+	password	ASCII password required to decrypt
 
-	 Returns zero for success.
+	Returns zero for success.
+	If called with dstLen set to zero, fills it with the required number of bytes.
 */
 int MiniZipAE1Read(char* src, unsigned long srcLen, char** dst, unsigned long *dstLen, char* password);
 
@@ -82,7 +85,7 @@ int MiniZipAE1Read(char* src, unsigned long srcLen, char** dst, unsigned long *d
 	salt		a pre allocated buffer receiving the salt
 	saltlen		length of the required salt (must be 8, 12 or 16)
 
-	 Returns zero for success.
+	Returns zero for success.
 */
 int MZAE_gen_salt(char* salt, int saltlen);
 
@@ -98,7 +101,7 @@ int MZAE_gen_salt(char* salt, int saltlen);
 	hmac_key	pointer receiving the address of the generated HMAC key
 	vv			pointer receiving the address of the verification value
 
-	 Returns zero for success.
+	Returns zero for success.
 */
 int MZAE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, char** hmac_key, char** vv);
 
@@ -113,7 +116,7 @@ int MZAE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, ch
 	srclen		length of the data to encrypt
 	dst			pointer receiving the address of the encrypted data buffer
 
-	 Returns zero for success.
+	Returns zero for success.
 */
 int MZAE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen, char** dst);
 
@@ -127,7 +130,7 @@ int MZAE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srcle
 	srclen		length of such data
 	dst			pointer receiving the address of the HMAC string
 
-	 Returns zero for success.
+	Returns zero for success.
 */
 int MZAE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int srclen, char** hmac);
 
@@ -139,7 +142,7 @@ int MZAE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int sr
 	src			source buffer
 	srclen		its length
 
-	 Returns the computated CRC.
+	Returns the computated CRC.
 */
 unsigned long MZAE_crc(unsigned long crc, char* src, unsigned int srclen);
 
@@ -153,7 +156,7 @@ unsigned long MZAE_crc(unsigned long crc, char* src, unsigned int srclen);
 	dstlen		pointer receiving the length of the compressed data
 
 
-	 Returns zero for success.
+	Returns zero for success.
 */
 int MZAE_deflate(char* src, unsigned int srclen, char** dst, unsigned int* dstlen);
 
@@ -167,7 +170,7 @@ int MZAE_deflate(char* src, unsigned int srclen, char** dst, unsigned int* dstle
 	dstlen		its length
 
 
-	 Returns zero for success.
+	Returns zero for success.
 */
 int MZAE_inflate(char* src, unsigned int srclen, char* dst, unsigned int dstlen);
 
