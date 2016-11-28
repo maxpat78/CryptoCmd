@@ -17,19 +17,19 @@ The well known AE-1 specification from WinZip[1] is implemented, so one of the f
 - NSS3 from Mozilla[5]
 - Libgcrypt from GNU project[6]
 
-cryptocmd.c is the main module.
+cryptocmd.c is the main command line module.
 
-AE_minizip.c provides 2 high level API to write or read a document in memory, in a single pass.
+MZAE_minizip.c provides 2 high level API to write or read a document in memory, in a single pass.
 
-AE_zlib.c provides support to Deflate algorithm via Zlib[7].
+MZAE_zlib.c provides support to Deflate algorithm via Zlib[7].
 
-AE_openssl.c implements required cryptographic functions on top of OpenSSL/LibreSSL.
+MZAE_openssl.c implements required cryptographic functions on top of OpenSSL/LibreSSL.
 
-AE_botan.c implements required cryptographic functions on top of Botan.
+MZAE_botan.c implements required cryptographic functions on top of Botan.
 
-AE_gcrypt.c implements required cryptographic functions on top of GNU libgcrypt.
+MZAE_gcrypt.c implements required cryptographic functions on top of GNU libgcrypt.
 
-AE_nss.c implements required cryptographic functions on top of Mozilla NSS3.
+MZAE_nss.c implements required cryptographic functions on top of Mozilla NSS3.
 
 
 

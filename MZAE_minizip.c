@@ -121,6 +121,7 @@ int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *
 	if (! *dstLen)
 	{
 		*dstLen = buflen + 156; //73+61+22
+		free(tmpbuf);
 		return MZAE_ERR_SUCCESS;
 	}
 
@@ -234,6 +235,7 @@ int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *
 	PDW(16, 63 + buflen + 10);
 	PW(20, 0);
 
+	free(tmpbuf);
 	free(ppbuf);
 	
 	return MZAE_ERR_SUCCESS;
