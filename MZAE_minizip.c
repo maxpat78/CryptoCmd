@@ -126,26 +126,44 @@ int MiniZipAE1Write(char* src, unsigned long srcLen, char** dst, unsigned long *
 	}
 
 	if (!password || !password[0])
-		return MZAE_ERR_PARAMS;
+	{
+		free(tmpbuf);
+		return MZAE_ERR_NOPW;
+	}
 
 	if (! *dst || *dstLen < (buflen + 156))
+	{
+		free(tmpbuf);
 		return MZAE_ERR_BUFFER;
+	}
 
-	crc = MZAE_crc(0, src, srcLen);
-	
 	if (MZAE_gen_salt(salt, 16))
+	{
+		free(tmpbuf);
 		return MZAE_ERR_SALT;
+	}
 
 	// Encrypts with AES-256 always!
 	if (MZAE_derive_keys(password, salt, 16, &aes_key, &hmac_key, &vv))
+	{
+		free(tmpbuf);
 		return MZAE_ERR_KDF;
+	}
 	
 	if (MZAE_ctr_crypt(aes_key, 32, tmpbuf, buflen, &ppbuf))
+	{
+		free(tmpbuf);
 		return MZAE_ERR_AES;
+	}
 
 	if (MZAE_hmac_sha1_80(hmac_key, 32, ppbuf, buflen, &digest))
+	{
+		free(tmpbuf);
 		return MZAE_ERR_HMAC;
-	
+	}
+
+	crc = MZAE_crc(0, src, srcLen);
+
 	p = *dst;
 
 #ifdef BYTE_ORDER_1234
@@ -291,7 +309,7 @@ int MiniZipAE1Read(char* src, unsigned long srcLen, char** dst, unsigned long *d
 		return MZAE_ERR_BUFFER;
 
 	if (!password || !password[0])
-		return MZAE_ERR_PARAMS;
+		return MZAE_ERR_NOPW;
 
 	salt = src + 45;
 

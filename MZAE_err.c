@@ -33,5 +33,7 @@ char* MZAE_errmsg(int code)
 		return "Bad CRC on uncompressed data";
 	if (code == MZAE_ERR_BADVV)
 		return "Wrong password";
+	if (code == MZAE_ERR_NOPW)
+		return "Empty password";
 	return "Unknown error";
 }

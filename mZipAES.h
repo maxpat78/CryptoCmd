@@ -33,6 +33,7 @@ extern "C" {
 #define MZAE_ERR_BADVV				10
 #define MZAE_ERR_BADHMAC			11
 #define MZAE_ERR_BADCRC				12
+#define MZAE_ERR_NOPW				13
 
 
 
