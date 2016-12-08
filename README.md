@@ -1,7 +1,7 @@
 CryptoCmd
 =========
 
-A little C utility (tested in a 32-bit environment) to read and write documents created with my CryptoPad/JCryptoPad tools.
+A little C utility licensed under GNU GPL (and tested in a 32-bit environment only) to read and write documents created with my CryptoPad/JCryptoPad tools.
 
 Such documents are simple ZIP archives encrypted with AES for maximum security and portability.
 
