@@ -3,4 +3,4 @@ gcc -DMAIN -I. MZAE_minizip.c MZAE_err.c MZAE_zlib.c MZAE_botan.c -lz -lbotan -o
 gcc -DMAIN -I. -I /usr/include MZAE_minizip.c MZAE_err.c MZAE_zlib.c MZAE_gcrypt.c -L /usr/lib -lz -lgcrypt -otest3.exe
 gcc -DMAIN -I. MZAE_minizip.c MZAE_err.c MZAE_zlib.c MZAE_nss.c -lz -lnss3 -otest4.exe
 
-gcc -I. -I /usr/include cryptocmd.c MZAE_minizip.c MZAE_zlib.c MZAE_gcrypt.c -L /usr/lib -lz -lgcrypt -o cryptocmd.exe
+gcc -I. -I /usr/include cryptocmd.c MZAE_err.c MZAE_zlib.c MZAE_openssl.c -lz -lcrypto -L /usr/lib -lz -o cryptocmd.exe
