@@ -25,7 +25,7 @@ MZAE_zlib.c provides support to Deflate algorithm via Zlib[7].
 
 MZAE_openssl.c implements required cryptographic functions on top of OpenSSL/LibreSSL.
 
-MZAE_botan.c implements required cryptographic functions on top of Botan.
+MZAE_botan.c implements required cryptographic functions on top of Botan[8].
 
 MZAE_gcrypt.c implements required cryptographic functions on top of GNU libgcrypt.
 
@@ -46,3 +46,5 @@ MZAE_nss.c implements required cryptographic functions on top of Mozilla NSS3.
 [6] See https://www.gnu.org/software/libgcrypt/
 
 [7] See http://zlib.net/
+
+[8] An old version 1.x library is required. New 2.x library is not supported due to the lack of ECB block cipher mode. Botan 2.x native CTR mode for stream ciphers use a Big Endian counter, not the Little Endian one imposed by AE-1.

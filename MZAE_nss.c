@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2016  <maxpat78> <https://github.com/maxpat78>
+ *  Copyright (C) 2016, 2019  <maxpat78> <https://github.com/maxpat78>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,12 +19,11 @@
 /*
 	Cryptographic functions built on top of Mozilla NSS.
 */
-
 #include <mZipAES.h>
 
-#include <nss/seccomon.h>
-#include <nss/pk11pub.h>
-
+#include <nss3/nss.h>
+#include <nss3/seccomon.h>
+#include <nss3/pk11pub.h>
 
 #ifdef BYTE_ORDER_1234
 void betole64(unsigned long long *x) {
