@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2016, 2019  <maxpat78> <https://github.com/maxpat78>
+ *  Copyright (C) 2016, 2019, 2021  <maxpat78> <https://github.com/maxpat78>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,14 +21,13 @@
 */
 
 #include <mZipAES.h>
-#include <string.h>
+
 #include <openssl/aes.h>
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
 
-
 #ifdef BYTE_ORDER_1234
-void betole64(unsigned long long *x) {
+void betole64(uint64_t *x) {
 *x = (*x & 0x00000000FFFFFFFF) << 32 | (*x & 0xFFFFFFFF00000000) >> 32;
 *x = (*x & 0x0000FFFF0000FFFF) << 16 | (*x & 0xFFFF0000FFFF0000) >> 16;
 *x = (*x & 0x00FF00FF00FF00FF) << 8  | (*x & 0xFF00FF00FF00FF00) >> 8;
@@ -82,7 +81,7 @@ int MZAE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, ch
 
 
 
-int MZAE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen, char** dst)
+int MZAE_ctr_crypt(char* key, uint32_t keylen, char* src, uint32_t srclen, char** dst)
 {
 	AES_KEY aes_key;
 	char ctr_counter_le[16];
@@ -93,7 +92,7 @@ int MZAE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srcle
 	const char* p = ctr_encrypted_counter;
 	const char* q = p+8;
 	char *pbuf;
-	unsigned int i;
+	uint32_t i;
 
 	if (!keylen || !srclen)
 		return -1;
@@ -113,28 +112,28 @@ int MZAE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srcle
 
 	for (i=0; i < srclen/16; i++) {
 #ifndef BYTE_ORDER_1234
-		(*((unsigned long long*) ctr_counter_le))++;
+		(*((uint64_t*) ctr_counter_le))++;
 #else	
-		(*((unsigned long long*) ctr_counter_be))++;
-		*((unsigned long long*) ctr_counter_le) = *((unsigned long long*) ctr_counter_be);
-		betole64((unsigned long long*)ctr_counter_le);
+		(*((uint64_t*) ctr_counter_be))++;
+		*((uint64_t*) ctr_counter_le) = *((uint64_t*) ctr_counter_be);
+		betole64((uint64_t*)ctr_counter_le);
 #endif
 		AES_ecb_encrypt(ctr_counter_le, ctr_encrypted_counter, &aes_key, 1);
-		*((unsigned long long*) pbuf) = *((unsigned long long*) src) ^ *((unsigned long long*) p);
-		pbuf+=sizeof(long long);
-		src+=sizeof(long long);
-		*((unsigned long long*) pbuf) = *((unsigned long long*) src) ^ *((unsigned long long*) q);
-		pbuf+=sizeof(long long);
-		src+=sizeof(long long);
+		*((uint64_t*) pbuf) = *((uint64_t*) src) ^ *((uint64_t*) p);
+		pbuf+=sizeof(uint64_t);
+		src+=sizeof(uint64_t);
+		*((uint64_t*) pbuf) = *((uint64_t*) src) ^ *((uint64_t*) q);
+		pbuf+=sizeof(uint64_t);
+		src+=sizeof(uint64_t);
 	}
 
 	if ((i = srclen%16)) {
 #ifndef BYTE_ORDER_1234
-		(*((unsigned long long*) ctr_counter_le))++;
+		(*((uint64_t*) ctr_counter_le))++;
 #else	
-		(*((unsigned long long*) ctr_counter_be))++;
-		*((unsigned long long*) ctr_counter_le) = *((unsigned long long*) ctr_counter_be);
-		betole64((unsigned long long*)ctr_counter_le);
+		(*((uint64_t*) ctr_counter_be))++;
+		*((uint64_t*) ctr_counter_le) = *((uint64_t*) ctr_counter_be);
+		betole64((uint64_t*)ctr_counter_le);
 #endif
 		AES_ecb_encrypt(ctr_counter_le, ctr_encrypted_counter, &aes_key, 1);
 		while (i--)
@@ -146,7 +145,7 @@ int MZAE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srcle
 
 
 
-int MZAE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int srclen, char** hmac)
+int MZAE_hmac_sha1_80(char* key, uint32_t keylen, char* src, uint32_t srclen, char** hmac)
 {
 	if (!keylen || !srclen)
 		return -1;

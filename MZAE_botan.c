@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2016  <maxpat78> <https://github.com/maxpat78>
+ *  Copyright (C) 2016, 2021  <maxpat78> <https://github.com/maxpat78>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,16 +17,15 @@
  */
 
 /*
-	Cryptographic functions built on top of Botan.
+	Cryptographic functions built on top of Botan 2.x library
 */
 
 #include <mZipAES.h>
 
 #include <botan/ffi.h>
 
-
 #ifdef BYTE_ORDER_1234
-void betole64(unsigned long long *x) {
+void betole64(uint64_t *x) {
 *x = (*x & 0x00000000FFFFFFFF) << 32 | (*x & 0xFFFFFFFF00000000) >> 32;
 *x = (*x & 0x0000FFFF0000FFFF) << 16 | (*x & 0xFFFF0000FFFF0000) >> 16;
 *x = (*x & 0x00FF00FF00FF00FF) << 8  | (*x & 0xFF00FF00FF00FF00) >> 8;
@@ -68,7 +67,7 @@ int MZAE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, ch
 	if (! kdfbuf)
 		return 2;
 	
-	if (botan_pbkdf("PBKDF2(SHA-1)", kdfbuf, 2*keylen+2, password, salt, saltlen, 1000))
+	if (botan_pwdhash("PBKDF2(SHA-1)", 1000, 0, 0, kdfbuf, 2*keylen+2, password, 0, salt, saltlen))
 		return 3;
 	
 	*aes_key = kdfbuf;
@@ -80,9 +79,9 @@ int MZAE_derive_keys(char* password, char* salt, int saltlen, char** aes_key, ch
 
 
 
-int MZAE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srclen, char** dst)
+int MZAE_ctr_crypt(char* key, uint32_t keylen, char* src, uint32_t srclen, char** dst)
 {
-	botan_cipher_t cipher;
+	botan_block_cipher_t cipher;
 	char ctr_counter_le[16];
 	char ctr_encrypted_counter[16];
 #ifdef BYTE_ORDER_1234
@@ -91,12 +90,12 @@ int MZAE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srcle
 	const char* p = ctr_encrypted_counter;
 	const char* q = p+8;
 	char *pbuf;
-	unsigned int i, ilen, olen;
+	uint32_t i, ilen, olen;
 
 	if (!keylen || !srclen)
 		return -1;
 
-	if (botan_cipher_init(&cipher, "AES-256/ECB", 0) || botan_cipher_set_key(cipher, key, keylen))
+	if (botan_block_cipher_init(&cipher, "AES-256") || botan_block_cipher_set_key(cipher, key, keylen))
 		return 1;
 
 #ifdef BYTE_ORDER_1234
@@ -111,30 +110,30 @@ int MZAE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srcle
 
 	for (i=0; i < srclen/16; i++) {
 #ifndef BYTE_ORDER_1234
-		(*((unsigned long long*) ctr_counter_le))++;
+		(*((uint64_t*) ctr_counter_le))++;
 #else	
-		(*((unsigned long long*) ctr_counter_be))++;
-		*((unsigned long long*) ctr_counter_le) = *((unsigned long long*) ctr_counter_be);
-		betole64((unsigned long long*)ctr_counter_le);
+		(*((uint64_t*) ctr_counter_be))++;
+		*((uint64_t*) ctr_counter_le) = *((uint64_t*) ctr_counter_be);
+		betole64((uint64_t*)ctr_counter_le);
 #endif
-		botan_cipher_update(cipher, 1, ctr_encrypted_counter, 16, &olen, ctr_counter_le, 16, &ilen);
-		*((unsigned long long*) pbuf) = *((unsigned long long*) src) ^ *((unsigned long long*) p);
-		pbuf+=sizeof(long long);
-		src+=sizeof(long long);
-		*((unsigned long long*) pbuf) = *((unsigned long long*) src) ^ *((unsigned long long*) q);
-		pbuf+=sizeof(long long);
-		src+=sizeof(long long);
+		botan_block_cipher_encrypt_blocks(cipher, ctr_counter_le, ctr_encrypted_counter, 1);
+		*((uint64_t*) pbuf) = *((uint64_t*) src) ^ *((uint64_t*) p);
+		pbuf+=sizeof(uint64_t);
+		src+=sizeof(uint64_t);
+		*((uint64_t*) pbuf) = *((uint64_t*) src) ^ *((uint64_t*) q);
+		pbuf+=sizeof(uint64_t);
+		src+=sizeof(uint64_t);
 	}
 
 	if ((i = srclen%16)) {
 #ifndef BYTE_ORDER_1234
-		(*((unsigned long long*) ctr_counter_le))++;
+		(*((uint64_t*) ctr_counter_le))++;
 #else	
-		(*((unsigned long long*) ctr_counter_be))++;
-		*((unsigned long long*) ctr_counter_le) = *((unsigned long long*) ctr_counter_be);
-		betole64((unsigned long long*)ctr_counter_le);
+		(*((uint64_t*) ctr_counter_be))++;
+		*((uint64_t*) ctr_counter_le) = *((uint64_t*) ctr_counter_be);
+		betole64((uint64_t*)ctr_counter_le);
 #endif
-		botan_cipher_update(cipher, 1, ctr_encrypted_counter, 16, &olen, ctr_counter_le, 16, &ilen);
+		botan_block_cipher_encrypt_blocks(cipher, ctr_counter_le, ctr_encrypted_counter, 1);
 		while (i--)
 			*pbuf++ = *src++ ^ *p++;
 	}
@@ -144,10 +143,9 @@ int MZAE_ctr_crypt(char* key, unsigned int keylen, char* src, unsigned int srcle
 
 
 
-int MZAE_hmac_sha1_80(char* key, unsigned int keylen, char* src, unsigned int srclen, char** hmac)
+int MZAE_hmac_sha1_80(char* key, uint32_t keylen, char* src, uint32_t srclen, char** hmac)
 {
 	botan_mac_t mac;
-	int olen;
 
 	if (!keylen || !srclen)
 		return -1;
